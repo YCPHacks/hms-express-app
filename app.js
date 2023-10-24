@@ -12,6 +12,8 @@ const port = process.env.PORT;
 app.set('view engine', 'pug');
 app.set('views', './views');
 
+app.use('/static', express.static('./public'));
+
 app.get('/', (req, res) => {
   res.status(200).send('OK');
 });

@@ -1,0 +1,49 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Navbar Page
+    style.
+      .custom-navbar {
+        background-color: #f5f7f6;
+        font-weight: 600; 
+      }
+      .navbar-brand img {
+        height: 1.5rem; 
+      }
+      .navbar-light .navbar-nav .nav-link {
+        color: #647f6b; 
+      }
+      .navbar-light .navbar-nav .nav-link.active {
+        color: #3A913F; 
+      }
+      .navbar-light .navbar-nav .nav-link.disabled {
+        color: #C6C6C6; 
+      }
+      .navbar-light .navbar-nav .nav-link:hover {
+        color: #3A913F; 
+      }
+
+
+  body
+    nav.navbar.navbar-expand-lg.navbar-light.custom-navbar
+      .container
+        a.navbar-brand.mr-2.ml-5(href="#")
+          img.mb-1(src="/static/images/logo-primary.png", alt="Logo")
+          span.mx-1
+          | YCP Hacks
+        button.navbar-toggler(type="button", data-bs-toggle="collapse", data-bs-target="#navbarNav", aria-controls="navbarNav", aria-expanded="false", aria-label="Toggle navigation")
+          span.navbar-toggler-icon
+        #navbarNav.collapse.navbar-collapse
+          ul.navbar-nav
+            li.nav-item
+              a.nav-link.disabled(href="#") Dashboard
+            li.nav-item
+              a.nav-link.active(href="/") Hardware Checkout
+            li.nav-item
+              a.nav-link(href="#") Event Control Panel
+            li.nav-item
+              a.nav-link.disabled(href="#") Team Management
+            li.nav-item
+              a.nav-link.disabled(href="#") Profile
