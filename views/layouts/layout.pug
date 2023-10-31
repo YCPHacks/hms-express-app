@@ -1,0 +1,12 @@
+html
+  head
+    title #{title}
+    include ../includes/globalScripts.pug
+    
+    block scripts
+    block style
+    meta(charset="UTF-8")
+  body 
+    block navbar
+      include ../includes/navbar.pug
+    block content
