@@ -1,0 +1,179 @@
+extends layout.pug 
+
+block style
+  style.
+    .dropdown-menu {
+      display: none; /* Hidden by default */
+      position: absolute; /* Positioning outside the flow of the document */
+      width: 500px; /* Arbitrary width, can be adjusted */
+      left: 50%; /* Center the dropdown */
+      transform: translateX(-50%); /* Center the dropdown */
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Optional: for better styling */
+    }
+    .dropdown-menu.show {
+      display: block; /* Show when the class 'show' is added */
+    }
+    .dropdown-menu .column {
+      width: calc(50% - 0.5rem); /* Divide the width, considering a margin */
+      float: left; /* Float to allow side-by-side alignment */
+      margin-right: 0.5rem; /* Spacing between columns */
+    }
+    .checkbox-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    /* Clearfix to handle the issue with floating elements */
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+block content
+  // Define a mixin for the pagination controls
+  mixin pagination(currentPage, totalItems, limit, baseUrl)
+    - var totalPages = Math.ceil(totalItems / limit);
+
+    // Bootstrap-styled pagination
+    .d-flex.justify-content-between.align-items-center.my-3
+      // Dropdown for rows per page
+      .dropdown
+        button.btn.btn-outline-primary.dropdown-toggle(type='button', id='dropdownMenuButton', data-bs-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+          | #{limit} per page
+        ul.dropdown-menu(aria-labelledby='dropdownMenuButton')
+          // These are the options for number of items per page. You can adjust them.
+          li
+            a.dropdown-item(href=baseUrl + "?limit=10&page=1") 10
+          li 
+            a.dropdown-item(href=baseUrl + "?limit=20&page=1") 20
+          li 
+            a.dropdown-item(href=baseUrl + "?limit=30&page=1") 30
+
+      // Pagination controls
+      nav(aria-label='Page navigation example')
+        ul.pagination.mb-0
+          // "Previous" page link
+          li.page-item(class=(currentPage == 1 ? "disabled" : ""))
+            a.page-link(href=(currentPage == 1 ? "#" : baseUrl + "?limit=" + limit + "&page=" + (currentPage - 1)), aria-label='Previous')
+              span.sr-only Previous
+
+          // Individual page numbers
+          - for (var i = 1; i <= totalPages; i++)
+            li.page-item(class=(i == currentPage ? "active" : ""))
+              a.page-link(href=baseUrl + "?limit=" + limit + "&page=" + i)= i
+
+          // "Next" page link
+          li.page-item(class=(currentPage == totalPages ? "disabled" : ""))
+            a.page-link(href=(currentPage == totalPages ? "#" : baseUrl + "?limit=" + limit + "&page=" + (currentPage + 1)), aria-label='Next')
+              span.sr-only Next
+
+  .container.mt-5
+    h2 Hardware Inventory
+
+    .row.input-group.mb-3.mt-3
+      .col-sm-2
+        form(action='/organizer-inventory' method='GET')
+          input.form-control(type="text", placeholder="...Search", aria-label="Search", name="search")
+      
+      // Multi-Select form that allows you to Filter by multiple Categories and Statuses
+      .col-sm-2 
+        // Button to toggle the dropdown
+        // Dropdown toggle button
+        button.btn.btn-primary.dropdown-toggle(
+          type='button', 
+          id='filterDropdown', 
+          data-bs-toggle='dropdown', 
+          aria-expanded='false'
+        ) Filter
+        // Dropdown menu content
+        .dropdown-menu.p-4.text-left(style='min-width: 30rem;' aria-labelledby='filterDropdown')
+          // Form
+          form(id='filterForm' action=('/organizer-inventory' + '?')  method='GET')
+            .row
+              // Categories column
+              .col
+                h5 Categories
+                ul.checkbox-list
+                  each category in categories
+                    li
+                      // Replace the items below with your actual category data
+                      input(type='checkbox', name='categories', value=category, id=category)
+                      label(for=category) #{category}
+              // Statuses column
+              .col
+                h5 Statuses
+                ul.checkbox-list
+                  each status in statuses
+                    li
+                      // Replace the items below with your actual status data
+                      input(type='checkbox', name='status', value=status, id=status)
+                      label(for=status) #{status}
+            // Save Changes button
+            button.btn.btn-success(type='submit') Save Changes 
+    .row
+      table.table
+        thead
+          tr
+            each col in columns
+              th(scope="col") #{col}
+        tbody
+          each row in data.data
+            tr
+              td 
+                .dropdown
+                  button.btn.btn-sm(role="button", data-bs-toggle="dropdown", aria-expanded="false", id="dropdownMenu")
+                    img(src="/static/icons/list.svg" alt="list-icon" width="20" height="20")
+                    
+                  ul.dropdown-menu(aria-labelledby="dropdownMenu")
+                    li
+                      a.dropdown-item(href=`/hardware-checkout/hardware/${row.id}`) View Hardware
+              td #{row.name}
+              td #{row.tag}
+              td #{row.category}
+              td
+                if row.status=="checked-in"
+                  span.badge.bg-success.rounded-pill(data-toggle="tooltip" data-placement="top" title="Checked-In") ✓
+                else if row.status=="checked-out"
+                  span.badge.bg-danger.rounded-pill(data-toggle="tooltip" data-placement="top" title="Checked-Out") ✕
+                else
+                  span.badge.bg-secondary.rounded-pill(data-toggle="tooltip" data-placement="top" title="Unavailable") ✕
+              td 
+                if row.renter_id
+                  #{row.renter_id}
+                else
+                | N/A
+              td 
+                if row.time
+                  #{row.time}
+                else
+                | N/A
+    .row
+      +pagination(currentPage, data.length, limit, '/organizer-inventory')
+      - console.log(currentPage, data.length, limit, '/organizer-inventory');
+      .d-flex.justify-content-end
+        | Showing #{data.length} of #{data.length} results
+
+    .row.mt-4
+      .col
+        .card
+          .card-body
+            h4 Check Out Items
+            p Selected Items: PC-1
+            .input-group.mb-3
+              input.form-control#user(type="text", placeholder="User", aria-label="User")
+              //- if "$('#user').val())" != ""
+                //- button.btn.btn-primary(type="button" onclick="checkout($('#user').val())") Check Out All Selected Items
+              //- else
+                //- button.btn.btn-primary(type="button" onclick="checkout($('#user').val())" disabled) Check Out All Selected Items
+              button.btn.btn-success(type="button") Check Out All Selected Items
+      .col
+        .row
+          .card
+            .card-body
+              .row
+                ul(style="list-style-type:none;")
+                  li Koen requested to check out PC-1 - 5:45PM 10/5/2013 
+                    button.btn.btn-success.mr-2 Accept
+                    button.btn.btn-danger Deny
+        .row 
+          a.btn.btn-link(href="#") View all Rental Requests
