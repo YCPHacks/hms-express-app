@@ -132,25 +132,26 @@ html
                 button.btn.btn-success(type='submit') Save Changes 
 
         .row
-          table.table
-            thead
-              tr
-                each col in columns
-                  th(scope="col") #{col}
-            tbody
-              block rowData
-                each row in data.data
-                  tr
-                    td #{row.name}
-                    td #{row.tag}
-                    td #{row.category}
-                    td
-                      if row.status=="checked-in"
-                        span.badge.bg-success.rounded-pill ✓
-                      else if row.status=="checked-out"
-                        span.badge.bg-danger.rounded-pill ✕
-                      else
-                        span.badge.bg-secondary.rounded-pill ✕
+          form#selectedRows
+            table.table
+              thead
+                tr
+                  each col in columns
+                    th(scope="col") #{col}
+              tbody
+                block rowData
+                  each row in data.data
+                    tr
+                      td #{row.name}
+                      td #{row.tag}
+                      td #{row.category}
+                      td
+                        if row.status=="checked-in"
+                          span.badge.bg-success.rounded-pill ✓
+                        else if row.status=="checked-out"
+                          span.badge.bg-danger.rounded-pill ✕
+                        else
+                          span.badge.bg-secondary.rounded-pill ✕
         .row
           //+pagination(currentPage, data.length, limit, '/attendee-inventory')
           //.d-flex.justify-content-end
@@ -192,8 +193,10 @@ html
         var limit = $('#dropdownMenuButton').val();
 
         var baseUrl = '#{baseUrl}';
+      
 
       }
+    block scripts
 
 
 
