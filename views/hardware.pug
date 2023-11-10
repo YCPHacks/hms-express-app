@@ -1,4 +1,4 @@
-extends layouts/layout.pug 
+extends layouts/layout.pug
 
 block content
   .container.mt-5
@@ -7,7 +7,7 @@ block content
         h2 Hardware Details
       .col
         .d-flex.justify-content-end
-          a.btn.btn-link(href="/organizer-inventory") Back to Inventory
+          a.btn.btn-link(href="/inventory") Back to Inventory
 
     .row.mb-4
       .col-md-6
@@ -37,21 +37,20 @@ block content
           form(onsubmit=`checkout($('#user').val())`)
             input#user.form-control(type="text", placeholder="User", aria-label="User" required)
             button.btn.btn-primary(type="button") Checkout
+        
+      .col-md-6
+        .card.p-3.overflow-auto(style="height: 300px;")
+          h5 Rental Record
+          ul.list-group.list-group-flush
+            li.list-group-item Koen checked item out 10:43am 10/9/2023
+            li.list-group-item Koen checked item in 10:45am 10/9/2023
+            li.list-group-item Trey checked item out 11:36am 10/9/2023
+            li.list-group-item Trey checked item in 12:13pm 10/9/2023
+            li.list-group-item Trey checked item in 12:13pm 10/9/2023
+            li.list-group-item Trey checked item in 12:13pm 10/9/2023
+            li.list-group-item Trey checked item in 12:13pm 10/9/2023
+            li.list-group-item Trey checked item in 12:13pm 10/9/2023
             
-      //
-        .col-md-6
-          .card.p-3.overflow-auto(style="height: 300px;")
-            h5 Rental Record
-            ul.list-group.list-group-flush
-              li.list-group-item Koen checked item out 10:43am 10/9/2023
-              li.list-group-item Koen checked item in 10:45am 10/9/2023
-              li.list-group-item Trey checked item out 11:36am 10/9/2023
-              li.list-group-item Trey checked item in 12:13pm 10/9/2023
-              li.list-group-item Trey checked item in 12:13pm 10/9/2023
-              li.list-group-item Trey checked item in 12:13pm 10/9/2023
-              li.list-group-item Trey checked item in 12:13pm 10/9/2023
-              li.list-group-item Trey checked item in 12:13pm 10/9/2023
-              
 block javaScript
   script.
     function checkout(user){
