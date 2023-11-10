@@ -1,6 +1,6 @@
 const { fetch } = require('undici');
 // These are the column headers for the table
-const columns = ["Name", "Tag", "Category"/* , "Status" */];
+const columns = ["Name", "Tag", "Category", "Status"];
 
 const categoryOptions = ["PC", "VR Headset"];
 const statusOptions = ["Checked-In", "Checked-Out", "Unavailable"];
@@ -8,7 +8,7 @@ const statusOptions = ["Checked-In", "Checked-Out", "Unavailable"];
 // This is the data for the table
 async function getData({ page, limit, search, filter}) {
     const queryString = `?page=${page}&limit=${limit}&search=${search}&filter=${filter}`;
-    const hardware = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware' + queryString, {
+    const hardware = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware_rentals_current' + queryString, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'

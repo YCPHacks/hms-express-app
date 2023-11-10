@@ -3,10 +3,14 @@ html
     title #{title}
     include ../includes/globalScripts.pug
     
-    block scripts
+    block import_scripts
     block style
     meta(charset="UTF-8")
   body 
     block navbar
       include ../includes/navbar.pug
     block content
+
+    script.
+
+    block javaScript

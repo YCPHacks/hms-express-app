@@ -1,6 +1,7 @@
 require('dotenv').config();
-// const getOrganizerInventoryData = require('../utils/organizer-inventory-data.js');
+const getOrganizerInventoryData = require('../utils/organizer-inventory-data.js');
 const getAttendeeInventoryData = require('../utils/attendee-inventory-data.js');
+const getHardwareData = require('../utils/hardware-data.js');
 const express = require('express');
 const { fetch } = require('undici');
 
@@ -27,15 +28,21 @@ router.get('/attendee-inventory', async (req, res) => {
     res.status(200).render('attendee-inventory');
 });
 
-// router.get('/organizer-inventory', async (req, res) => {
-//     const { page, limit, search } = req.query;
-//     const categories = [req.query.categories];
-//     const statuses = [req.query.statuses];
+router.get('/organizer-inventory', async (req, res) => {
+    const { page, limit, search } = req.query;
+    const categories = [req.query.categories];
+    const statuses = [req.query.statuses];
     
-//     res.locals = { ...await getOrganizerInventoryData({ page, limit, search, categories, statuses}) };
-//     res.locals.title = "Hardware Inventory"
-//     res.status(200).render('organizer-inventory');
-// });
+    res.locals = { ...await getOrganizerInventoryData({ page, limit, search, categories, statuses}) };
+    res.locals.title = "Hardware Inventory"
+    res.status(200).render('organizer-inventory');
+});
+
+router.get('/hardware/:id', async (req, res) => {
+    res.locals = { ...await getHardwareData(req.params.id) };
+    res.locals.title = "Hardware Details"
+    res.status(200).render('hardware');
+});
 
 // router.get('/inventory-management', async (req, res) => {
 //     const { page, limit, search } = req.query;

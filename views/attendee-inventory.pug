@@ -6,11 +6,10 @@ block rowData
       td #{row.name}
       td #{row.tag}
       td #{row.category}
-      // ------ Removed For Hackathon ------
-      //- td
-      //-   if row.status=="checked-in"
-      //-     span.badge.bg-success.rounded-pill ✓
-      //-   else if row.status=="checked-out"
-      //-     span.badge.bg-danger.rounded-pill ✕
-      //-   else
-      //-     span.badge.bg-secondary.rounded-pill ✕
+      td
+        if row.status=="checked-in"
+          span.badge.bg-success.rounded-pill ✓
+        else if row.status=="checked out"
+          span.badge.bg-danger.rounded-pill ✕
+        else
+          span.badge.bg-secondary.rounded-pill ✕
