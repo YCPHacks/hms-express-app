@@ -6,7 +6,7 @@ block rowData
       td 
         .dropdown
           button.btn.btn-sm(role="button", data-bs-toggle="dropdown", aria-expanded="false", id="dropdownMenu")
-            img(src="/static/icons/list.svg" alt="list-icon" width="20" height="20")
+            img(src="/public/icons/list.svg" alt="list-icon" width="20" height="20")
             
           ul.dropdown-menu(aria-labelledby="dropdownMenu")
             li
@@ -50,18 +50,18 @@ block contentBelowTable
               //- else
                 //- button.btn.btn-primary(type="button" onclick="checkout($('#user').val())" disabled) Check Out All Selected Items
               button.btn.btn-success(type="button") Check Out All Selected Items
-    //
-      .col
-        .row
-          .card
-            .card-body
-              .row
-                ul(style="list-style-type:none;")
-                  li Koen requested to check out PC-1 - 5:45PM 10/5/2013 
-                    button.btn.btn-success.mr-2 Accept
-                    button.btn.btn-danger Deny
-        .row 
-          a.btn.btn-link(href="#") View all Rental Requests
+    
+    .col
+      .row
+        .card
+          .card-body
+            .row
+              ul(style="list-style-type:none;")
+                li Koen requested to check out PC-1 - 5:45PM 10/5/2013 
+                  button.btn.btn-success.mr-2 Accept
+                  button.btn.btn-danger Deny
+      .row 
+        a.btn.btn-link(href="#") View all Rental Requests
 
 block scripts 
   script.
