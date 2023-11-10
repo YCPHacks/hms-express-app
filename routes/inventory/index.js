@@ -6,7 +6,7 @@ const getAttendeeInventoryData = require('../../utils/attendee-inventory-data.js
 module.exports = async function (fastify, opts) {
   fastify.get('/', async function (request, reply) {
 
-    return reply.redirect('/inventory/organizer');
+    return reply.redirect('/inventory/attendee');
   });
 
   fastify.get('/organizer', async function (request, reply) {
