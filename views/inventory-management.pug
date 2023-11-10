@@ -1,0 +1,75 @@
+extends layouts/inventory-layout.pug
+
+block rowData 
+  each row in data.data
+    tr
+    td #{row.name}
+    td #{row.tag}
+    td #{row.category}
+    td
+      if row.status=="checked-in"
+        span.badge.bg-success.rounded-pill ✓
+      else if row.status=="checked out"
+        span.badge.bg-danger.rounded-pill ✕
+      else
+        span.badge.bg-secondary.rounded-pill ✕
+    td
+      if row.user_id != null
+        | #{row.user_id}
+      else
+        | N/A
+    td
+      if row.last_updated != null
+        | #{row.last_updated}
+      else
+        | N/A
+
+block contentBelowTable
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-6
+        .card
+          .card-body 
+            form#hardwareForm
+              .mb-3
+                label(for='name' class='form-label') Name:
+                input#name.form-control(name='name', type='text', placeholder='Name')
+              
+              .mb-3
+                label(for='category' class='form-label') Category:
+                input#category.form-control(name='category', required='required', type='text', placeholder='Category')
+
+              .mb-3
+                label(for='tag' class='form-label') Tag:
+                input#tag.form-control(name='tag', type='text', required='required', placeholder='Tag')
+
+              button.btn.btn-success(type='submit') Add Hardware
+        
+block scripts
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('hardwareForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var name = document.getElementById('name').value;
+        var category = document.getElementById('category').value;
+        var tag = document.getElementById('tag').value;
+        fetch('/hardware', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: name, category: category, tag: tag }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          alert("There was an error adding an item to the inventory.");
+        })
+        .finally(() => {
+          window.location.reload();
+        });
+      });
+    });

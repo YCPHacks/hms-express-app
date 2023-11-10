@@ -21,6 +21,16 @@ module.exports = async function (fastify, opts) {
     return reply.status(200).view('hardware.pug', locals);
   });
 
+  fastify.post('/', async function (request, reply) {
+    const result = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request.body)
+    }).then(res => res.json());
+    return reply.status(200).send(result);
+  });
 
   
 }

@@ -23,14 +23,14 @@ block rowData
           span.badge.bg-danger.rounded-pill(data-toggle="tooltip" data-placement="top" title="Checked-Out") ✕
         else
           span.badge.bg-secondary.rounded-pill(data-toggle="tooltip" data-placement="top" title=row.status) ✕
-      td(id=`attendee-${row.attendee_name}`)
-        if row.attendee_name != null
-          | #{row.attendee_name}
+      td(id=`attendee-${row.user_id}`)
+        if row.user_id != null
+          | #{row.user_id}
         else
           | N/A
-      td(id=`date-${row.date}`)
-        if row.date != null
-          | #{row.date}
+      td(id=`date-${row.last_updated}`)
+        if row.last_updated != null
+          | #{row.last_updated}
         else
           | N/A
 
