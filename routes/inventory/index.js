@@ -6,19 +6,29 @@ const getAttendeeInventoryData = require('../../utils/attendee-inventory-data.js
 module.exports = async function (fastify, opts) {
   fastify.get('/', async function (request, reply) {
 
-    return reply.redirect('/inventory/organizer-inventory');
+    return reply.redirect('/inventory/organizer');
   });
 
   fastify.get('/organizer', async function (request, reply) {
     const { page, limit, search, categories, statuses } = request.query;
 
-    return reply.view('organizer-inventory.pug', {...await getOrganizerInventoryData({ page, limit, search, categories, statuses})});
+    const locals = {
+        ...await getOrganizerInventoryData({ page, limit, search, categories, statuses}),
+        title: "Hardware Inventory"
+    }
+
+    return reply.view('organizer-inventory.pug', locals);
   });
 
   fastify.get('/attendee', async function (request, reply) {
     const { page, limit, search, categories, statuses } = request.query;
 
-    return reply.view('attendee-inventory.pug', {...await getAttendeeInventoryData({ page, limit, search, categories, statuses})});
+    const locals = {
+        ...await getAttendeeInventoryData({ page, limit, search, categories, statuses}),
+        title: "Hardware Inventory"
+    }
+
+    return reply.view('attendee-inventory.pug', locals);
   });
 
 }
