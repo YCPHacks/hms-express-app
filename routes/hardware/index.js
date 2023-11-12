@@ -14,7 +14,11 @@ module.exports = async function (fastify, opts) {
   });
 
   fastify.get('/:id', async function (request, reply) {
-    return reply.status(200).view('hardware.pug', {...await getHardwareData(request.params.id), title: "Hardware Details"});
+    const locals = { 
+      ...await getHardwareData(request.params.id), 
+      title: "Hardware Details" 
+    };
+    return reply.status(200).view('hardware.pug', locals);
   });
 
 

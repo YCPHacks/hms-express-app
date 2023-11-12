@@ -1,3 +1,5 @@
+const { fetch } = require('undici')
+
 async function getData(hardwareId) {
     const hardware = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware/' + hardwareId, {
         method: 'GET',
