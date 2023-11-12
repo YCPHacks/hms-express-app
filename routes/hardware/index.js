@@ -32,5 +32,26 @@ module.exports = async function (fastify, opts) {
     return reply.status(200).send(result);
   });
 
+  fastify.patch('/:id', async function (request, reply) {
+    const result = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware/' + request.params.id, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request.body)
+    }).then(res => res.json());
+    return reply.status(200).send(result);
+  });
+
+  fastify.delete('/:id', async function (request, reply) {
+    const result = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware/' + request.params.id, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(res => res.json());
+    return reply.status(200).send(result);
+  });
+
   
 }

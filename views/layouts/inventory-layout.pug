@@ -35,7 +35,6 @@ html
   body 
     block navbar 
       include ../includes/navbar.pug
-    // ------- Removed For Hackathon -------
       // Define a mixin for the pagination controls
       mixin pagination(currentPage, totalItems, limit, baseUrl)
         - var totalPages = Math.ceil(totalItems / limit);
@@ -43,35 +42,41 @@ html
         // Bootstrap-styled pagination
         .d-flex.justify-content-between.align-items-center.my-3
           // Dropdown for rows per page
-          .dropdown
-            button.btn.btn-outline-primary.dropdown-toggle(type='button', id='dropdownMenuButton', data-bs-toggle='dropdown', aria-haspopup='true', aria-expanded='false' value=limit)
-              | #{limit} per page
-            ul.dropdown-menu(aria-labelledby='dropdownMenuButton')
-              // These are the options for number of items per page. You can adjust them.
-              li
-                a.dropdown-item(href=baseUrl + "?limit=10&page=1") 10
-              li 
-                a.dropdown-item(href=baseUrl + "?limit=20&page=1") 20
-              li 
-                a.dropdown-item(href=baseUrl + "?limit=30&page=1") 30
+          form(id='pageSizeForm' onsubmit="buildQuery()")
+            input#pageSizeInput(type='hidden', name='pageSize', value=limit)
+            .dropdown
+              button.btn.btn-outline-primary.dropdown-toggle(type='button', id='dropdownMenuButton', data-bs-toggle='dropdown', aria-haspopup='true', aria-expanded='false' value=limit)
+                | #{limit} per page
+              ul.dropdown-menu(aria-labelledby='dropdownMenuButton')
+                // These are the options for number of items per page. You can adjust them.
+                li
+                  button.dropdown-item(onclick="submitPageSizeForm(10)") 10
+                li 
+                  button.dropdown-item(onclick="submitPageSizeForm(20)") 20
+                li 
+                  button.dropdown-item(onclick="submitPageSizeForm(30)") 30
+                li 
+                  button.dropdown-item(onclick="submitPageSizeForm(50)") 50
 
           // Pagination controls
-          nav(aria-label='Page navigation example')
-            ul.pagination.mb-0
-              // "Previous" page link
-              li.page-item(class=(currentPage == 1 ? "disabled" : ""))
-                a.page-link(href=(currentPage == 1 ? "#" : baseUrl + "?limit=" + limit + "&page=" + (currentPage - 1)), aria-label='Previous' onclick="reload()")
-                  span.sr-only Previous
+          form(id='paginationForm' onsubmit="buildQuery()")
+            input#paginationInput(type='hidden', name='page', value=currentPage)
+            nav(aria-label='Page navigation example')
+              ul.pagination.mb-0
+                // "Previous" page link
+                li.page-item(class=(currentPage == 1 ? "disabled" : ""))
+                  button.page-link(onclick=`submitPageNumber(${currentPage == 1 ? 0 : currentPage - 1})`, aria-label='Previous')
+                    span.sr-only Previous
 
-              // Individual page numbers
-              - for (var i = 1; i <= totalPages; i++)
-                li.page-item(class=(i == currentPage ? "active" : ""))
-                  a.page-link(onclick="reload()" ,href=baseUrl + "?limit=" + limit + "&page=" + i)= i
+                // Individual page numbers
+                - for (var i = 1; i <= totalPages; i++)
+                  li.page-item(class=(i == currentPage ? "active" : ""))
+                    button.page-link(onclick=`submitPageNumber(${i})`)= i
 
-              // "Next" page link
-              li.page-item(class=(currentPage == totalPages ? "disabled" : ""))
-                a.page-link(href=(currentPage == totalPages ? "#" : baseUrl + "?limit=" + limit + "&page=" + (++currentPage)), aria-label='Next', onclick="reload()")
-                  span.sr-only Next
+                // "Next" page link
+                li.page-item(class=(currentPage == totalPages ? "disabled" : ""))
+                  button.page-link(onclick=`submitPageNumber(${currentPage == totalPages ? 0 : ++currentPage})`, aria-label='Next')
+                    span.sr-only Next
 
     .container.mt-5
       block pageName
@@ -80,12 +85,11 @@ html
       block contentAboveTable
       
       block table
-        // Search and Filter bar ------ Removed For Hackathon -------
-        //.row.input-group.mb-3.mt-3
+        .row.input-group.mb-3.mt-3
 
           // Search Bar
           .col-sm-2
-            form(action='/attendee-inventory' method='GET' onsubmit="reload()")
+            form(id="searchForm" onsubmit="buildQuery()")
               input.form-control#search(type="text", placeholder="...Search", aria-label="Search" name="search" value=`${search}`)
 
           // Filter by multiple Categories and Statuses
@@ -102,25 +106,25 @@ html
             // Dropdown menu content
             .dropdown-menu.p-4.text-left(style='min-width: 30rem;' aria-labelledby='filterDropdown')
               // Form
-              form(id='filterForm' action=('/attendee-inventory' + '?')  method='GET' onsubmit="reload()")
+              form#filterForm(onsubmit="buildQuery()")
                 .row
 
                   // Categories column
                   .col
                     h5 Categories
-                    ul.checkbox-list
+                    ul.checkbox-list(style='max-height: 20rem; overflow-y: auto;')
                       each categoryOption in categoryOptions
                         li
                           // Keep filter selected on reload
                           - var active = categories.includes(categoryOption);
                           input(type='checkbox', name='categories', value=categoryOption, id=categoryOption checked = active ? '' : null)
- 
+
                           label(for=categoryOption) #{categoryOption}
 
                   // Statuses column
                   .col
                     h5 Statuses
-                    ul.checkbox-list
+                    ul.checkbox-list(style='max-height: 20rem; overflow-y: auto;')
                       each statusOption in statusOptions
                         li
                           // Keep filter selected on reload
@@ -153,8 +157,8 @@ html
                         else
                           span.badge.bg-secondary.rounded-pill ✕
         .row
-          //+pagination(currentPage, data.length, limit, '/attendee-inventory')
-          //.d-flex.justify-content-end
+          +pagination(currentPage, data.length, limit, '/attendee-inventory')
+          .d-flex.justify-content-end
             | Showing #{data.length} of #{data.length} results
       
       block contentBelowTable
@@ -184,17 +188,79 @@ html
           .row 
             a.btn.btn-link(href="#") View all Rental Requests
     script.
-      function reload() {
-        var url = window.location.href;
-        console.log("here", url);
-        var search = $('#search').val();
-        console.log(search);
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+        });
+      });
 
-        var limit = $('#dropdownMenuButton').val();
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+        });
+      });
 
-        var baseUrl = '#{baseUrl}';
-      
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('pageSizeForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+        });
+      });
 
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('paginationForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+        });
+      });
+
+      function submitPageSizeForm(size) {
+        document.getElementById('pageSizeInput').value = size;
+        buildQuery();
+        //- document.getElementById('pageSizeForm').submit();
+      }
+
+      function submitPageNumber(page) {
+        document.getElementById('paginationInput').value = page;
+        buildQuery();
+        //- document.getElementById('paginationForm').submit();
+      }
+
+      function buildQuery() {
+        console.log(window.location);
+        
+        var search = document.getElementById('search').value;
+        var pageSize = document.getElementById('pageSizeInput').value;
+        var pageNumber = document.getElementById('paginationInput').value;
+        var categories = []
+        $('#filterForm input[type="checkbox"][name="categories"]:checked').each(function() {
+          categories.push($(this).val());
+        });
+        var statuses = []
+        $('#filterForm input[type="checkbox"][name="statuses"]:checked').each(function() {
+          statuses.push($(this).val());
+        });
+
+        var query = '?';
+        if (search) {
+          query += 'search=' + search + '&';
+        }
+        if (pageSize) {
+          query += 'limit=' + pageSize + '&';
+        }
+        if (pageNumber) {
+          query += 'page=' + pageNumber + '&';
+        }
+        if (categories.length > 0) {
+          categories.forEach(function(category) {
+            query += 'categories=' + category + '&';
+          });
+        }
+        if (statuses.length > 0) {
+          statuses.forEach(function(status) {
+            query += 'statuses=' + status + '&';
+          });
+        }
+
+        window.location.href = window.location.href.split('?')[0] + query.slice(0, -1);
       }
     block scripts
 

@@ -71,6 +71,7 @@ block scripts
 
       let selectedItems = [];
       $('#selectedRows input[type="checkbox"]:checked').each(function(index) {
+        console.log(index);
         let input = $(this);
         let id = input.attr('id');
 

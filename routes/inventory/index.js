@@ -1,5 +1,4 @@
 'use strict'
-
 const getOrganizerInventoryData = require('../../utils/organizer-inventory-data.js');
 const getAttendeeInventoryData = require('../../utils/attendee-inventory-data.js');
 const getInventoryManagementData = require('../../utils/inventory-management-data.js');

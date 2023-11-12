@@ -2,29 +2,49 @@ extends layouts/inventory-layout.pug
 
 block rowData 
   each row in data.data
-    tr
-    td #{row.name}
-    td #{row.tag}
-    td #{row.category}
-    td
-      if row.status=="checked-in"
-        span.badge.bg-success.rounded-pill ✓
-      else if row.status=="checked out"
-        span.badge.bg-danger.rounded-pill ✕
-      else
-        span.badge.bg-secondary.rounded-pill ✕
-    td
-      if row.user_id != null
-        | #{row.user_id}
-      else
-        | N/A
-    td
-      if row.last_updated != null
-        | #{row.last_updated}
-      else
-        | N/A
+    tr(id= row.id)
+      td#nameCell 
+        div(contenteditable='true', oninput='showSaveButton(this)') #{row.name}
+      td#tagCell 
+        div(contenteditable='true', oninput='showSaveButton(this)') #{row.tag}
+      td#categoryCell 
+        div(contenteditable='true' oninput='showSaveButton(this)') #{row.category}
+      td
+        if row.status=="checked-in"
+          span.badge.bg-success.rounded-pill ✓
+        else if row.status=="checked out"
+          span.badge.bg-danger.rounded-pill ✕
+        else
+          span.badge.bg-secondary.rounded-pill ✕
+      td
+        if row.user_id != null
+          | #{row.user_id}
+        else
+          | N/A
+      td
+        if row.last_updated != null
+          | #{row.last_updated}
+        else
+          | N/A
+      td
+        button.btn.btn-danger(type='button', onclick='showRemoveConfirmationModal(this)') Delete
+        button.btn.btn-success.d-none.save-changes-btn(type='button', onclick='saveChanges(this)') Save Changes
 
 block contentBelowTable
+  #removeConfirmationModal.modal.fade(tabindex='-1', aria-labelledby='removeConfirmationModalLabel', aria-hidden='true')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h5#removeConfirmationModalLabel.modal-title Are you sure you want to remove this item?
+          button.close(type='button', data-bs-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') &times;
+        .modal-body
+          input(type='hidden' id='itemToRemoveId')
+          p This action cannot be undone.
+        .modal-footer
+          button.btn.btn-secondary(type='button', data-bs-dismiss='modal') Cancel
+          button.btn.btn-danger(type='button', onclick='confirmRemoval()') Delete
+  
   .container.mt-5
     .row.justify-content-center
       .col-md-6
@@ -44,6 +64,8 @@ block contentBelowTable
                 input#tag.form-control(name='tag', type='text', required='required', placeholder='Tag')
 
               button.btn.btn-success(type='submit') Add Hardware
+
+  
         
 block scripts
   script.
@@ -66,10 +88,66 @@ block scripts
         })
         .catch((error) => {
           console.error('Error:', error);
-          alert("There was an error adding an item to the inventory.");
+          //- alert("There was an error adding an item to the inventory.");
         })
         .finally(() => {
           window.location.reload();
         });
       });
     });
+
+    function showSaveButton(cell) {
+      // Find the nearest parent 'tr' (the row of the table)
+      var row = cell.closest('tr');
+      // Find the 'Save Changes' button within this row by class
+      var saveButton = row.querySelector('.save-changes-btn');
+      saveButton.classList.remove('d-none');
+    }
+
+    function saveChanges(button) {
+      var row = button.parentElement.parentElement;
+
+      var name = row.cells["nameCell"].innerText.trim();
+      var tag = row.cells["tagCell"].innerText.trim();
+      var category = row.cells["categoryCell"].innerText.trim();
+
+      fetch('/hardware/' + row.id, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: name, category: category, tag: tag }),
+      });
+
+      button.classList.add('d-none');
+    }
+
+    function showRemoveConfirmationModal(button) {
+      var row = button.closest('tr');
+      var itemId = row.id
+      document.getElementById('itemToRemoveId').value = itemId;
+      
+      // Now show the modal
+      var removeConfirmationModal = new bootstrap.Modal(document.getElementById('removeConfirmationModal'), {});
+      removeConfirmationModal.show();
+    }
+
+    function confirmRemoval() {
+      var itemId = document.getElementById('itemToRemoveId').value;
+      console.log('Item with ID will be removed:', itemId);
+
+      // Your AJAX call or other logic to remove the item goes here.
+
+
+      // Close modal after action
+      var removeConfirmationModal = bootstrap.Modal.getInstance(document.getElementById('removeConfirmationModal'));
+      removeConfirmationModal.hide();
+      fetch('/hardware/' + itemId, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).finally(() => {
+        window.location.reload();
+      });
+    }

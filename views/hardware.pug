@@ -7,7 +7,7 @@ block content
         h2 Hardware Details
       .col
         .d-flex.justify-content-end
-          a.btn.btn-link(href="/inventory") Back to Inventory
+          button.btn.btn-link(onclick="backToInventory()") Back to Inventory
 
     .row.mb-4
       .col-md-6
@@ -15,46 +15,76 @@ block content
           h5 Name: #{name}
           p.mb-1 Tag: #{tag}
           p.mb-1 Category: #{category}
-          //
-            p.mb-1 Available: 
-              if status=="Available"
-                span.badge.bg-success.rounded-pill ✓
-              else if status=="Rented"
-                span.badge.bg-danger.rounded-pill ✕
-              else
-                span.badge.bg-secondary.rounded-pill ✕
-            p.mb-1 User: 
-              if renter_id
-                #{renter_id}
-              else
-                | N/A
-            p.mb-1 Date: 
-              if time
-                #{time}
-              else
-                | N/A
+          
+          p.mb-1 Available: 
+            // Needs fixed
+            if status==null
+              span.badge.bg-success.rounded-pill ✓
+            else if status=="checked out"
+              span.badge.bg-danger.rounded-pill ✕
+            else
+              span.badge.bg-secondary.rounded-pill ✕
+          p.mb-1 User: 
+            if user
+              | #{user}
+            else
+              | N/A
+          p.mb-1 Date: 
+            if last_updated
+              | #{last_updated}
+            else
+              | N/A
         .input-group.align-bottom
           form(onsubmit=`checkout($('#user').val())`)
-            input#user.form-control(type="text", placeholder="User", aria-label="User" required)
-            button.btn.btn-primary(type="button") Checkout
+            row
+              input#user.form-control(type="text", placeholder="User", aria-label="User" required)
+              button.btn.btn-primary(type="submit" )
+                // Needs fixed
+                if status==null 
+                  | Checkout
+                else if status=="checked out"
+                  | Checkin
+                else
+                // Disable button
         
       .col-md-6
         .card.p-3.overflow-auto(style="height: 300px;")
           h5 Rental Record
           ul.list-group.list-group-flush
-            li.list-group-item Koen checked item out 10:43am 10/9/2023
-            li.list-group-item Koen checked item in 10:45am 10/9/2023
-            li.list-group-item Trey checked item out 11:36am 10/9/2023
-            li.list-group-item Trey checked item in 12:13pm 10/9/2023
-            li.list-group-item Trey checked item in 12:13pm 10/9/2023
-            li.list-group-item Trey checked item in 12:13pm 10/9/2023
-            li.list-group-item Trey checked item in 12:13pm 10/9/2023
-            li.list-group-item Trey checked item in 12:13pm 10/9/2023
+            for record in history 
+              li.list-group-item
+                | User #{record.user_id} #{record.status} at #{record.last_updated}
             
 block javaScript
   script.
     function checkout(user){
       console.log(user)
 
-      alert("" + user + " checked out " + "#{name}");
+      let status = "#{status}"
+      if (status == "checked out"){
+        action = "checked_in"
+      } else {
+        action = "checked out"
+      }
+
+      fetch('/rental_validation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: user,
+          hardware_id: "#{id}",
+          status: action
+        })
+      }).finally(function(){
+        alert("" + user + " " + action + " " + "#{name}");
+        window.location.reload();
+      })
+
+      
+    }
+
+    function backToInventory(){
+      window.location.href = "/inventory";
     }
