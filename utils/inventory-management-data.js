@@ -1,8 +1,7 @@
 const { fetch } = require('undici');
 // These are the column headers for the table
-const columns = ["Name", "Tag", "Category", "Status"];
+const columns = ["Name", "Tag", "Category", "Status", "User ID", "Time"];
 
-// const categoryOptions = ["PC", "VR Headset"];
 async function getCategoryOptions() {
     const categories = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware/categories', {
         method: 'GET',
@@ -31,7 +30,7 @@ async function getData({ page, limit, search, categories, statuses}) {
     }
 
     queryString = queryString.slice(0, -1);
-    const hardware = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware_rentals_current' + queryString, {
+    const hardware = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware_rentals_current' + queryString, {    
     // const hardware = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware' + queryString, {
         method: 'GET',
         headers: {
@@ -42,12 +41,12 @@ async function getData({ page, limit, search, categories, statuses}) {
     if (!hardware) {
         return [];
     }
+
     return hardware;
 };
 
 // This is compiling the data into a single object
-async function getAttendeeInventoryData({ page = 1, limit = 20, search = '', categories = [], statuses = []}) {
-    console.log(search);
+async function getInventoryManagementData({ page = 1, limit = 20, search = '', categories = [], statuses = []}) {
     return {
         columns,
         data: await getData({ page, limit, search, categories, statuses}),
@@ -58,9 +57,9 @@ async function getAttendeeInventoryData({ page = 1, limit = 20, search = '', cat
         statuses,
         categoryOptions: await getCategoryOptions(),
         statusOptions,
-        baseUrl: '/attendee-inventory'
+        baseUrl: '/organizer-inventory'
     };
 }
 
 // This is exporting the object as a module to be imported elsewhere
-module.exports = getAttendeeInventoryData;
+module.exports = getInventoryManagementData;

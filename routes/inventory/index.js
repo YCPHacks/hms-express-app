@@ -1,7 +1,7 @@
 'use strict'
-
 const getOrganizerInventoryData = require('../../utils/organizer-inventory-data.js');
 const getAttendeeInventoryData = require('../../utils/attendee-inventory-data.js');
+const getInventoryManagementData = require('../../utils/inventory-management-data.js');
 
 module.exports = async function (fastify, opts) {
   fastify.get('/', async function (request, reply) {
@@ -29,6 +29,17 @@ module.exports = async function (fastify, opts) {
     }
 
     return reply.view('attendee-inventory.pug', locals);
+  });
+
+  fastify.get('/manager', async function (request, reply) {
+    const { page, limit, search, categories, statuses } = request.query;
+
+    const locals = {
+        ...await getInventoryManagementData({ page, limit, search, categories, statuses}),
+        title: "Inventory Management"
+    }
+
+    return reply.view('inventory-management.pug', locals);
   });
 
 }
