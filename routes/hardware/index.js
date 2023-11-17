@@ -1,5 +1,5 @@
 const { fetch } = require('undici');
-const getHardwareData = require('../../utils/hardware-data.js');
+const getHardwareData = require('../../utils/hardware/hardware-data.js');
 
 
 module.exports = async function (fastify, opts) {

@@ -1,7 +1,6 @@
 'use strict'
-const getOrganizerInventoryData = require('../../utils/organizer-inventory-data.js');
-const getAttendeeInventoryData = require('../../utils/attendee-inventory-data.js');
-const getInventoryManagementData = require('../../utils/inventory-management-data.js');
+const getInventoryData = require('../../utils/inventory/inventory-data.js');
+const getColumns = require('../../utils/inventory/columns.js');
 
 module.exports = async function (fastify, opts) {
   fastify.get('/', async function (request, reply) {
@@ -13,7 +12,8 @@ module.exports = async function (fastify, opts) {
     const { page, limit, search, categories, statuses } = request.query;
 
     const locals = {
-        ...await getOrganizerInventoryData({ page, limit, search, categories, statuses}),
+        ...await getInventoryData({ page, limit, search, categories, statuses}),
+        ...await getColumns('organizer'),
         title: "Hardware Inventory"
     }
 
@@ -24,7 +24,8 @@ module.exports = async function (fastify, opts) {
     const { page, limit, search, categories, statuses } = request.query;
 
     const locals = {
-        ...await getAttendeeInventoryData({ page, limit, search, categories, statuses}),
+        ...await getInventoryData({ page, limit, search, categories, statuses}),
+        ...await getColumns('attendee'),
         title: "Hardware Inventory"
     }
 
@@ -35,8 +36,9 @@ module.exports = async function (fastify, opts) {
     const { page, limit, search, categories, statuses } = request.query;
 
     const locals = {
-        ...await getInventoryManagementData({ page, limit, search, categories, statuses}),
-        title: "Inventory Management"
+        ...await getInventoryData({ page, limit, search, categories, statuses}),
+        ...await getColumns('manager'),
+        title: "Inventory Manager"
     }
 
     return reply.view('inventory-management.pug', locals);
