@@ -1,4 +1,5 @@
-const { fetch } = require('undici')
+const { fetch } = require('undici');
+const { DateTime } = require('luxon')
 
 async function getData(hardwareId) {
     const hardware = await fetch(process.env.HARDWARE_MANAGEMENT_URL + 'hardware_rentals_current/' + hardwareId, {
@@ -6,7 +7,12 @@ async function getData(hardwareId) {
         headers: {
             'Content-Type': 'application/json'
         }
-    }).then(res => res.json());
+    }).then(res => res.json()).then((res) => {
+        if(res.last_updated){
+            res.last_updated = new Date(res.last_updated).toLocaleString(DateTime.DATETIME_SHORT);
+        }
+        return res;
+    });
     return hardware;
 }
 
@@ -16,7 +22,14 @@ async function getRentalsHistory(hardwareId) {
         headers: {
             'Content-Type': 'application/json'
         }
-    }).then(res => res.json());
+    }).then(res => res.json().then((res) => {
+        res.forEach(hardware => {
+            if(hardware.last_updated){
+                hardware.last_updated = new Date(hardware.last_updated).toLocaleString(DateTime.DATETIME_SHORT);
+            }
+        });
+        return res;
+    }));
     return hardware;
 }
 
@@ -24,7 +37,6 @@ async function getRentalsHistory(hardwareId) {
 async function getHardwareData(id) {
     const data = await getData(id);
     const history = await getRentalsHistory(id);
-    console.log(history, data);
     return {
         id: data.id,
         name: data.name,

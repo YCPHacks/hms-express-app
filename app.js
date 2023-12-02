@@ -1,12 +1,5 @@
 'use strict'
 require('dotenv').config();
-const Fastify = require('fastify');
-
-const express = require('express');
-
-const router = require('./routes/index.js');
-
-// Fastify App
 
 const path = require('path')
 const AutoLoad = require('@fastify/autoload')

@@ -1,56 +1,52 @@
 extends layouts/inventory-layout.pug 
 
 block rowData
-  each row in data.data
-    tr
-      td 
-        .dropdown
-          button.btn.btn-sm(role="button", data-bs-toggle="dropdown", aria-expanded="false", id="dropdownMenu")
-            img(src="/public/icons/list.svg" alt="list-icon" width="20" height="20")
-            
-          ul.dropdown-menu(aria-labelledby="dropdownMenu")
-            li
-              a.dropdown-item(href=`/hardware/${row.id}`) View Hardware
-      td 
-        input(type='checkbox', name='hardware', value=row.id, id=row.id onchange="updateCheckedItems()")
-        label(for=row.id) #{row.name}  
-      td(id=`tag-${row.id}`) #{row.tag}
-      td(id=`category-${row.category}`) #{row.category}
-      td(id=`status-${row.status}`)
-        if row.status=="checked-in"
-          span.badge.bg-success.rounded-pill(data-toggle="tooltip" data-placement="top" title="Checked-In") ✓
-        else if row.status=="checked out"
-          span.badge.bg-danger.rounded-pill(data-toggle="tooltip" data-placement="top" title="Checked-Out") ✕
-        else
-          span.badge.bg-secondary.rounded-pill(data-toggle="tooltip" data-placement="top" title=row.status) ✕
-      td(id=`attendee-${row.user_id}`)
-        if row.user_id != null
-          | #{row.user_id}
-        else
-          | N/A
-      td(id=`date-${row.last_updated}`)
-        if row.last_updated != null
-          | #{row.last_updated}
-        else
-          | N/A
+  form#selectedRows
+    each row in data.data
+      tr
+        td 
+          .dropdown
+            button.btn.btn-sm(role="button", data-bs-toggle="dropdown", aria-expanded="false", id="dropdownMenu")
+              img(src="/public/icons/list.svg" alt="list-icon" width="20" height="20")
+              
+            ul.dropdown-menu(aria-labelledby="dropdownMenu")
+              li
+                a.dropdown-item(href=`/hardware/${row.id}`) View Hardware
+        td 
+          input(type='checkbox', name='hardware', value=row.id, id=row.id onchange="updateCheckedItems()")
+          label(for=row.id) #{row.name}  
+        td(id=`tag-${row.id}`) #{row.tag}
+        td(id=`category-${row.category}`) #{row.category}
+        td(id=`status-${row.id}` value=row.status)
+          if row.status=="checked-in"
+            span.badge.bg-success.rounded-pill(data-toggle="tooltip" data-placement="top" title="Checked-In") ✓
+          else if row.status=="checked out"
+            span.badge.bg-danger.rounded-pill(data-toggle="tooltip" data-placement="top" title="Checked-Out") ✕
+          else
+            span.badge.bg-secondary.rounded-pill(data-toggle="tooltip" data-placement="top" title=row.status) ✕
+        td(id=`attendee-${row.user_id}`)
+          if row.user_id != null
+            | #{row.user_id}
+          else
+            | N/A
+        td(id=`date-${row.last_updated}`)
+          if row.last_updated != null
+            | #{row.last_updated}
+          else
+            | N/A
 
 block contentBelowTable
   .row.mt-4
     .col
       .card
         .card-body
-          form#checkout-form(onsubmit=`checkout($('#user').val())`)
-            h4 Check In/Out Items
-            p Selected Items: 
-            p#items None selected.
-            .input-group.mb-3
-              input.form-control#user(type="text", placeholder="User", aria-label="User" required)
-              //- if "$('#user').val())" != ""
-                //- button.btn.btn-primary(type="button" onclick="checkout($('#user').val())") Check Out All Selected Items
-              //- else
-                //- button.btn.btn-primary(type="button" onclick="checkout($('#user').val())" disabled) Check Out All Selected Items
-              button.btn.btn-success(type="button") Check Out All Selected Items
-    
+          h4 Check In/Out Items
+          p Selected Items: 
+          p#items None selected.
+          .input-group.mb-3
+            input.form-control#user(type="text", placeholder="User", aria-label="User" required)
+            button.btn.btn-success(type="button" onclick=`checkout($('#user').val())`) Check Out All Selected Items
+  //  
     .col
       .row
         .card
@@ -70,40 +66,71 @@ block scripts
       let status
 
       let selectedItems = [];
-      $('#selectedRows input[type="checkbox"]:checked').each(function(index) {
-        console.log(index);
+      let selectedIds = [];
+      let invalid;
+      $('input[name="hardware"][type="checkbox"]:checked').each(function(index) {
         let input = $(this);
         let id = input.attr('id');
 
         if(index == 0){
-          status = $(`#status-${id}`).text();
-        } else {
-          if(status != $(`#status-${id}`).text()){
-            alert("You can only check out items with the same status.")
-            return;
-          }
+          status = $(`#status-${id}`).attr("value");
+        } else if (status != $(`#status-${id}`).attr("value")){
+          alert("You can only check out items with the same status.");
+          invalid = true;
+          return;
         }
+        selectedIds.push(id);
 
         
         let label = $(this).next('label');
         if (label) {
           selectedItems.push(label.text());
         }
-
       });
-      let action;
+      if(invalid){
+        return;
+      }
 
-      if(status = "checked-in"){
+      if (selectedItems.length == 0) {
+        alert("You must select at least one item to check out.");
+        return;
+      }
+
+      let action;
+      if(status == "checked-in"){
         action = "checked out"
       } else {
-        action = "checked in"
+        action = "checked_in"
       }
-      alert("" + user + " " + action + " items: " + selectedItems.join(', '));
+
+      const results = Promise.allSettled(selectedIds.map(async (item) => {
+        console.log(item);
+        return await fetch('/rental_validation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+          },
+          body: JSON.stringify({
+            user_id: user,
+            hardware_id: Number(item),
+            status: action
+          })
+        });
+      })).then(() => {
+        alert("Success");
+      }).catch((error) => {
+        console.error('Error:', error);
+        alert("There was an error checking out items.");
+      }).finally(() => {
+        window.location.reload();
+      });
     }
 
     function updateCheckedItems() {
       let selectedItems = [];
-      $('#selectedRows input[type="checkbox"]:checked').each(function() {
+      let form = document.getElementById('selectedRows');
+
+      $('input[name="hardware"][type="checkbox"]:checked').each(function() {
         let input = $(this);
         console.log(input.attr('id'));
         let label = $(this).next('label');

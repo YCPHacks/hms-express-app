@@ -10,8 +10,7 @@ html
         position: absolute; /* Positioning outside the flow of the document */
         width: 500px; /* Arbitrary width, can be adjusted */
         left: 50%; /* Center the dropdown */
-        /* transform: translateX(-50%); /* Center the dropdown */
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Optional: for better styling */
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
       }
       .dropdown-menu.show {
         display: block; /* Show when the class 'show' is added */
@@ -23,20 +22,16 @@ html
       }
       .checkbox-list {
         list-style-type: none;
-        padding: 0;
-      }
-      /* Clearfix to handle the issue with floating elements */
-      .clearfix::after {
-        content: "";
-        clear: both;
-        display: table;
+        padding-left: 0.3rem;
+        max-height: 20rem; 
+        overflow-y: auto;
       }
 
   body 
     block navbar 
       include ../includes/navbar.pug
       // Define a mixin for the pagination controls
-      mixin pagination(currentPage, totalItems, limit, baseUrl)
+      mixin pagination(currentPage, totalItems, limit)
         - var totalPages = Math.ceil(totalItems / limit);
 
         // Bootstrap-styled pagination
@@ -59,12 +54,14 @@ html
                   button.dropdown-item(onclick="submitPageSizeForm(50)") 50
 
           // Pagination controls
-          form(id='paginationForm' onsubmit="buildQuery()")
+          form(id='paginationForm' onsubmit="buildQuery(false)")
             input#paginationInput(type='hidden', name='page', value=currentPage)
             nav(aria-label='Page navigation example')
               ul.pagination.mb-0
                 // "Previous" page link
+                //- li.page-item(class=(currentPage == 1 ? "disabled" : ""))
                 li.page-item(class=(currentPage == 1 ? "disabled" : ""))
+                  //- button.page-link(onclick=`submitPageNumber(${currentPage - 1})`, aria-label='Previous')
                   button.page-link(onclick=`submitPageNumber(${currentPage == 1 ? 0 : currentPage - 1})`, aria-label='Previous')
                     span.sr-only Previous
 
@@ -100,6 +97,7 @@ html
               type='button', 
               id='filterDropdown', 
               data-bs-toggle='dropdown', 
+              data-bs-auto-close='outside',
               aria-expanded='false'
             ) Filter
 
@@ -112,54 +110,53 @@ html
                   // Categories column
                   .col
                     h5 Categories
-                    ul.checkbox-list(style='max-height: 20rem; overflow-y: auto;')
+                    ul.checkbox-list
                       each categoryOption in categoryOptions
-                        li
+                        li.form-check
                           // Keep filter selected on reload
                           - var active = categories.includes(categoryOption);
-                          input(type='checkbox', name='categories', value=categoryOption, id=categoryOption checked = active ? '' : null)
+                          input.form-check-input(type='checkbox', name='categories', value=categoryOption, id=categoryOption checked = active ? '' : null)
 
-                          label(for=categoryOption) #{categoryOption}
+                          label.form-check-label(for=categoryOption) #{categoryOption}
 
                   // Statuses column
                   .col
                     h5 Statuses
-                    ul.checkbox-list(style='max-height: 20rem; overflow-y: auto;')
+                    ul.checkbox-list
                       each statusOption in statusOptions
-                        li
+                        li.form-check
                           // Keep filter selected on reload
                           - var active = statuses.includes(statusOption);
-                          input(type='checkbox', name='statuses', value=statusOption, id=statusOption checked = active ? '' : null)
+                          input.form-check-input(type='checkbox', name='statuses', value=statusOption, id=statusOption checked = active ? '' : null)
 
-                          label(for=statusOption) #{statusOption}
+                          label.form-check-label(for=statusOption) #{statusOption}
                 // Save Changes button
                 button.btn.btn-success(type='submit') Save Changes 
 
         .row
-          form#selectedRows
-            table.table
-              thead
-                tr
-                  each col in columns
-                    th(scope="col") #{col}
-              tbody
-                block rowData
-                  each row in data.data
-                    tr
-                      td #{row.name}
-                      td #{row.tag}
-                      td #{row.category}
-                      td
-                        if row.status=="checked-in"
-                          span.badge.bg-success.rounded-pill ✓
-                        else if row.status=="checked-out"
-                          span.badge.bg-danger.rounded-pill ✕
-                        else
-                          span.badge.bg-secondary.rounded-pill ✕
+          table.table
+            thead
+              tr
+                each col in columns
+                  th(scope="col") #{col}
+            tbody
+              block rowData
+                each row in data.data
+                  tr
+                    td #{row.name}
+                    td #{row.tag}
+                    td #{row.category}
+                    td
+                      if row.status=="checked-in"
+                        span.badge.bg-success.rounded-pill ✓
+                      else if row.status=="checked-out"
+                        span.badge.bg-danger.rounded-pill ✕
+                      else
+                        span.badge.bg-secondary.rounded-pill ✕
         .row
-          +pagination(currentPage, data.length, limit, '/attendee-inventory')
+          +pagination(currentPage, data.totalLength, limit)
           .d-flex.justify-content-end
-            | Showing #{data.length} of #{data.length} results
+            | Showing #{(limit * currentPage) > data.totalLength ? data.totalLength : (limit * currentPage)} of #{data.totalLength} results
       
       block contentBelowTable
     //
@@ -192,21 +189,15 @@ html
         document.getElementById('filterForm').addEventListener('submit', function(e) {
           e.preventDefault();
         });
-      });
 
-      document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('searchForm').addEventListener('submit', function(e) {
           e.preventDefault();
         });
-      });
 
-      document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('pageSizeForm').addEventListener('submit', function(e) {
           e.preventDefault();
         });
-      });
 
-      document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('paginationForm').addEventListener('submit', function(e) {
           e.preventDefault();
         });
@@ -215,16 +206,13 @@ html
       function submitPageSizeForm(size) {
         document.getElementById('pageSizeInput').value = size;
         buildQuery();
-        //- document.getElementById('pageSizeForm').submit();
       }
 
       function submitPageNumber(page) {
         document.getElementById('paginationInput').value = page;
-        buildQuery();
-        //- document.getElementById('paginationForm').submit();
       }
 
-      function buildQuery() {
+      function buildQuery(resetPage = true) {
         console.log(window.location);
         
         var search = document.getElementById('search').value;
@@ -246,7 +234,7 @@ html
         if (pageSize) {
           query += 'limit=' + pageSize + '&';
         }
-        if (pageNumber) {
+        if (resetPage == false && pageNumber) {
           query += 'page=' + pageNumber + '&';
         }
         if (categories.length > 0) {

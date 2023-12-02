@@ -1,5 +1,8 @@
 extends layouts/inventory-layout.pug
 
+block pageName 
+  h2 Inventory Manager
+
 block rowData 
   each row in data.data
     tr(id= row.id)
