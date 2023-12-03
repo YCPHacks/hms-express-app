@@ -14,5 +14,11 @@ module.exports = fp(async function (fastify, opts) {
       pug: require('pug'),
     },
     root: path.join(__dirname, '../views'),
+    defaultContext: {
+      navLinks: {
+        legacy_smms: process.env.LEGACY_SCHEDULED_MESSAGES_MANAGEMENT_URL,
+        mvp: process.env.MVP_URL,
+      }
+    }
   })
 })
